@@ -1,6 +1,7 @@
 # System Imports
 import sys
 import os
+import re
 
 
 # Local imports
@@ -28,6 +29,13 @@ class GEDCOM_Validator:
             'TRLR': 0,
             'NOTE': 0
         }
+
+        self.individuals = {}
+        self.families = {}
+
+        self.current_record = None
+        self.current_record_type = None
+        self.pending_tag = None
     # End __init__
 
     def check_tag_valid(self, tag, level):
@@ -81,6 +89,37 @@ class GEDCOM_Validator:
 
                 # Second print - added newline for readability
                 print(f'<-- {level}|{tag}|{valid}|{arguments}\n')
+
+                # Build individual/family collections
+                if level == '0':
+                    if tag == 'INDI':
+                        uid = int(re.search(r'\d+', arguments).group())
+                        self.current_record = {'id': arguments, 'uid': uid, 'name': None, 'sex': None,
+                                               'birt': None, 'deat': None, 'famc': None, 'fams': None}
+                        self.individuals[arguments] = self.current_record
+                        self.current_record_type = 'INDI'
+                    elif tag == 'FAM':
+                        fid = int(re.search(r'\d+', arguments).group())
+                        self.current_record = {'id': arguments, 'fid': fid, 'marr': None, 'div': None,
+                                               'husb': None, 'wife': None, 'chil': []}
+                        self.families[arguments] = self.current_record
+                        self.current_record_type = 'FAM'
+                    else:
+                        self.current_record = None
+                        self.current_record_type = None
+                    self.pending_tag = None
+
+                elif level == '1' and self.current_record is not None:
+                    if tag in ('NAME', 'SEX', 'HUSB', 'WIFE', 'FAMC', 'FAMS'):
+                        self.current_record[tag.lower()] = arguments
+                    elif tag == 'CHIL':
+                        self.current_record['chil'].append(arguments)
+                    elif tag in ('BIRT', 'DEAT', 'MARR', 'DIV'):
+                        self.pending_tag = tag.lower()
+
+                elif level == '2' and tag == 'DATE' and self.pending_tag and self.current_record is not None:
+                    self.current_record[self.pending_tag] = arguments
+                    self.pending_tag = None
             # End for
         # End with
     # End run
