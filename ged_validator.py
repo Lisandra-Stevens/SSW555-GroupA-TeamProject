@@ -6,7 +6,9 @@ import os
 import re
 
 # Local imports
-# None
+from individual import Individual
+from family import Family
+
 
 class GEDCOM_Validator:
 
@@ -31,8 +33,8 @@ class GEDCOM_Validator:
             'NOTE': 0
         }
 
-        self.individuals = {}
-        self.families = {}
+        self.individuals = []
+        self.families = []
 
         self.current_record = None
         self.current_record_type = None
@@ -67,34 +69,24 @@ class GEDCOM_Validator:
         table = PrettyTable()
         table.field_names = ["ID", "Name", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"]
 
-        for uid,individual in self.individuals.items():
+        for individual in self.individuals:
             fields = []
-            fields.append(individual['id'])
-            fields.append(individual['name'])
-            fields.append(individual['sex'])
+            fields.append(individual.uid)
+            fields.append(individual.name)
+            fields.append(individual.gender)
+            fields.append(individual.birthday.strftime("%Y-%m-%d"))
+            fields.append(individual.age)
+            fields.append(individual.alive)
 
-            birth_dt = datetime.strptime(individual['birt'], "%d %b %Y")
-            fields.append(birth_dt.strftime("%Y-%m-%d"))
 
-            if (individual['deat'] is None):
-                # As the individual is not dead, we can use the current date for age
-                current_dt = datetime.now()
-                fields.append(self.get_year_difference(birth_dt, current_dt))
-
-                fields.append('True')
+            if (individual.death is None):
                 fields.append('N/A')
-
             else:
-                death_dt = datetime.strptime(individual['deat'], "%d %b %Y")
-
-                fields.append(self.get_year_difference(birth_dt, death_dt))
-                fields.append('False')
-                fields.append(death_dt.strftime("%Y-%m-%d"))
+                fields.append(individual.death.strftime("%Y-%m-%d"))
             # End if-else
-
-            data = individual['famc']
+            data = individual.child
             fields.append(data if len(data) != 0 else 'N/A')
-            data = individual['fams']
+            data = individual.spouse
             fields.append(data if len(data) != 0 else 'N/A')
 
             table.add_row(fields)
@@ -108,25 +100,25 @@ class GEDCOM_Validator:
         table = PrettyTable()
         table.field_names = ["ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"]
 
-        for fid,family in self.families.items():
+        for family in self.families:
             fields = []
-            fields.append(family['id'])
-            
-            marr_dt = datetime.strptime(family['marr'], "%d %b %Y")
-            fields.append(marr_dt.strftime("%Y-%m-%d"))
+            fields.append(family.uid)
+            fields.append(family.married.strftime("%Y-%m-%d"))
 
-            if (family['div'] is None):
+            if (family.divorced is None):
                 fields.append('N/A')
             else:
-                div_dt = datetime.strptime(family['div'], "%d %b %Y")
-                fields.append(div_dt.strftime("%Y-%m-%d"))
+                fields.append(family.divorced.strftime("%Y-%m-%d"))
             # End if-else
 
-            fields.append(family['husb'])
-            fields.append(self.individuals[family['husb']]['name'])
-            fields.append(family['wife'])
-            fields.append(self.individuals[family['wife']]['name'])
-            fields.append(family['chil'])
+            fields.append(family.husband_id)
+            result = next(filter(lambda indi: indi.uid == family.husband_id, self.individuals), None)
+            fields.append(result.name)
+            fields.append(family.wife_id)
+            result = next(filter(lambda indi: indi.uid == family.wife_id, self.individuals), None)
+            fields.append(result.name)
+            fields.append(family.children)
+
             table.add_row(fields)
         # End for
 
@@ -175,38 +167,42 @@ class GEDCOM_Validator:
 
                 # Build individual/family collections
                 if level == '0':
+
+                    # A new L0 title was found, store any active items if we are working
+                    # on one
+                    if (self.current_record_type == 'INDI'):
+                        self.individuals.append(self.current_record)
+                    elif (self.current_record_type == 'FAM'):
+                        self.families.append(self.current_record)
+                    # End if-elif
+
                     if tag == 'INDI':
-                        uid = int(re.search(r'\d+', arguments).group())
                         iid = arguments.strip('@')
-                        self.current_record = {'id': iid, 'uid': uid, 'name': None, 'sex': None,
-                                               'birt': None, 'deat': None, 'famc': [], 'fams': []}
-                        self.individuals[arguments] = self.current_record
+                        self.current_record = Individual(uid=iid)
                         self.current_record_type = 'INDI'
                     elif tag == 'FAM':
-                        fid = int(re.search(r'\d+', arguments).group())
                         iid = arguments.strip('@')
-                        self.current_record = {'id': iid, 'fid': fid, 'marr': None, 'div': None,
-                                               'husb': None, 'wife': None, 'chil': []}
-                        self.families[arguments] = self.current_record
+                        self.current_record = Family(uid=iid)
                         self.current_record_type = 'FAM'
                     else:
                         self.current_record = None
                         self.current_record_type = None
+                    # End if-elif-else
                     self.pending_tag = None
 
                 elif level == '1' and self.current_record is not None:
-                    if tag in ('NAME', 'SEX', 'HUSB', 'WIFE'):
-                        self.current_record[tag.lower()] = arguments
-                    elif tag in ('FAMC', 'FAMS'):
-                        self.current_record[tag.lower()].append(arguments)
-                    elif tag == 'CHIL':
-                        self.current_record['chil'].append(arguments)
-                    elif tag in ('BIRT', 'DEAT', 'MARR', 'DIV'):
-                        self.pending_tag = tag.lower()
+                    if valid == 'Y':
+                        if tag in ('BIRT', 'DEAT', 'MARR', 'DIV'):
+                            self.pending_tag = tag
+                        else:
+                            self.current_record.set_tag_value(tag, arguments)
+                        # End if-else
+                    # End if
 
                 elif level == '2' and tag == 'DATE' and self.pending_tag and self.current_record is not None:
-                    self.current_record[self.pending_tag] = arguments
+                    self.current_record.set_tag_value(self.pending_tag, arguments)
                     self.pending_tag = None
+                # End if-elif
             # End for
         # End with
 
