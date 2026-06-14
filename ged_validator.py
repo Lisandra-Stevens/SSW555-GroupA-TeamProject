@@ -1,8 +1,9 @@
 # System Imports
+from prettytable import PrettyTable
+from datetime import datetime
 import sys
 import os
 import re
-
 
 # Local imports
 # None
@@ -53,6 +54,85 @@ class GEDCOM_Validator:
         return ret_val
     # End check_tag_valid
 
+    def get_year_difference(self, start_date, end_date):
+        # Subtract years, then subtract 1 if the end date hasn't crossed the birthday/anniversary yet
+        has_not_passed = (end_date.month, end_date.day) < (start_date.month, start_date.day)
+        years = end_date.year - start_date.year - has_not_passed
+
+        return years
+    # End get_year_difference
+
+    def print_invidiuals(self):
+        # Start the table and add the field names
+        table = PrettyTable()
+        table.field_names = ["ID", "Name", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"]
+
+        for uid,individual in self.individuals.items():
+            fields = []
+            fields.append(individual['id'])
+            fields.append(individual['name'])
+            fields.append(individual['sex'])
+
+            birth_dt = datetime.strptime(individual['birt'], "%d %b %Y")
+            fields.append(birth_dt.strftime("%Y-%m-%d"))
+
+            if (individual['deat'] is None):
+                # As the individual is not dead, we can use the current date for age
+                current_dt = datetime.now()
+                fields.append(self.get_year_difference(birth_dt, current_dt))
+
+                fields.append('True')
+                fields.append('N/A')
+
+            else:
+                death_dt = datetime.strptime(individual['deat'], "%d %b %Y")
+
+                fields.append(self.get_year_difference(birth_dt, death_dt))
+                fields.append('False')
+                fields.append(death_dt.strftime("%Y-%m-%d"))
+            # End if-else
+
+            data = individual['famc']
+            fields.append(data if len(data) != 0 else 'N/A')
+            data = individual['fams']
+            fields.append(data if len(data) != 0 else 'N/A')
+
+            table.add_row(fields)
+        # End for
+
+        print(table.get_string())
+    # End print_invidiuals
+
+    def print_family(self):
+        # Start the table and add the field names
+        table = PrettyTable()
+        table.field_names = ["ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"]
+
+        for fid,family in self.families.items():
+            fields = []
+            fields.append(family['id'])
+            
+            marr_dt = datetime.strptime(family['marr'], "%d %b %Y")
+            fields.append(marr_dt.strftime("%Y-%m-%d"))
+
+            if (family['div'] is None):
+                fields.append('N/A')
+            else:
+                div_dt = datetime.strptime(family['div'], "%d %b %Y")
+                fields.append(div_dt.strftime("%Y-%m-%d"))
+            # End if-else
+
+            fields.append(family['husb'])
+            fields.append(self.individuals[family['husb']]['name'])
+            fields.append(family['wife'])
+            fields.append(self.individuals[family['wife']]['name'])
+            fields.append(family['chil'])
+            table.add_row(fields)
+        # End for
+
+        print(table.get_string())
+    # End print_family
+
     def run(self, gedcom_file):
         print(gedcom_file)
 
@@ -69,14 +149,14 @@ class GEDCOM_Validator:
                 strip_line = line.strip()
 
                 # First print
-                print(f'--> {strip_line}')
+                # print(f'--> {strip_line}')
 
                 # Split the line by spaces
                 split_line = strip_line.split(' ', maxsplit=2)
                 level = split_line[0]
 
                 # There are two types of tags that do not match the standard format
-                if ('INDI' in line) or ('FAM' in line):
+                if (('INDI' in line) or ('FAM' in line)) and (level == '0'):
                     arguments = split_line[1]
                     tag = split_line[2]
                 else:
@@ -84,23 +164,28 @@ class GEDCOM_Validator:
                     arguments = split_line[2] if len(split_line) >= 3 else ''
                 # End if-else
 
+                # Post processing!
+                arguments = arguments.strip('@')
+
                 # Check if the tag is valid!
                 valid = self.check_tag_valid(tag, level)
 
                 # Second print - added newline for readability
-                print(f'<-- {level}|{tag}|{valid}|{arguments}\n')
+                # print(f'<-- {level}|{tag}|{valid}|{arguments}\n')
 
                 # Build individual/family collections
                 if level == '0':
                     if tag == 'INDI':
                         uid = int(re.search(r'\d+', arguments).group())
-                        self.current_record = {'id': arguments, 'uid': uid, 'name': None, 'sex': None,
-                                               'birt': None, 'deat': None, 'famc': None, 'fams': None}
+                        iid = arguments.strip('@')
+                        self.current_record = {'id': iid, 'uid': uid, 'name': None, 'sex': None,
+                                               'birt': None, 'deat': None, 'famc': [], 'fams': []}
                         self.individuals[arguments] = self.current_record
                         self.current_record_type = 'INDI'
                     elif tag == 'FAM':
                         fid = int(re.search(r'\d+', arguments).group())
-                        self.current_record = {'id': arguments, 'fid': fid, 'marr': None, 'div': None,
+                        iid = arguments.strip('@')
+                        self.current_record = {'id': iid, 'fid': fid, 'marr': None, 'div': None,
                                                'husb': None, 'wife': None, 'chil': []}
                         self.families[arguments] = self.current_record
                         self.current_record_type = 'FAM'
@@ -110,8 +195,10 @@ class GEDCOM_Validator:
                     self.pending_tag = None
 
                 elif level == '1' and self.current_record is not None:
-                    if tag in ('NAME', 'SEX', 'HUSB', 'WIFE', 'FAMC', 'FAMS'):
+                    if tag in ('NAME', 'SEX', 'HUSB', 'WIFE'):
                         self.current_record[tag.lower()] = arguments
+                    elif tag in ('FAMC', 'FAMS'):
+                        self.current_record[tag.lower()].append(arguments)
                     elif tag == 'CHIL':
                         self.current_record['chil'].append(arguments)
                     elif tag in ('BIRT', 'DEAT', 'MARR', 'DIV'):
@@ -122,6 +209,11 @@ class GEDCOM_Validator:
                     self.pending_tag = None
             # End for
         # End with
+
+        # Now print the tables
+        self.print_invidiuals()
+        print()
+        self.print_family()
     # End run
 
 # End GEDCOM_Validator
