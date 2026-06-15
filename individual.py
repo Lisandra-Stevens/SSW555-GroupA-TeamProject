@@ -37,9 +37,10 @@ class Individual:
     ###########################################################################
 
     def validate(self):
-        pass
-    # End validate
+        result = True
 
+        return result
+    # End validate
 
 
     ###########################################################################
