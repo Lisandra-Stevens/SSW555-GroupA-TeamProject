@@ -36,8 +36,23 @@ class Individual:
     #
     ###########################################################################
 
+    def validate_less_than_150(self):
+        result = True
+
+        # Check if the age of the individual is less than 150!
+        if (self.age >= 150):
+            print(f'ERROR: ID {self.uid} is over 150 years old!')
+            result = False
+        # End if
+
+        return result
+    # End validate_less_than_150
+
     def validate(self):
         result = True
+
+        # Validate age is less than 150
+        result &= self.validate_less_than_150()
 
         return result
     # End validate
