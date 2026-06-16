@@ -50,6 +50,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
         # End with
     # End test_husband_doesnt_exist
 
+
     def test_wife_doesnt_exist(self):
         # Create Husband Individual
         husband = Individual()
@@ -82,6 +83,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             self.assertEqual(result, False)
         # End with
     # End test_wife_doesnt_exist
+
 
     def test_both_exist_wife_born_before_marriage(self):
         # Create Husband Individual
@@ -124,6 +126,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
         # End with
     # End test_both_exist_wife_born_before_marriage
 
+
     def test_both_exist_husband_born_before_marriage(self):
         # Create Husband Individual
         husband = Individual()
@@ -165,6 +168,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
         # End with
     # End test_both_exist_husband_born_before_marriage
 
+
     def test_both_exist_both_born_after_marriage(self):
         # Create Husband Individual
         husband = Individual()
@@ -204,7 +208,6 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             self.assertEqual(result, True)
         # End with
     # End test_both_exist_husband_born_before_marriage
-
 # End Test_US02_BirthBeforeMarriage
 
 
