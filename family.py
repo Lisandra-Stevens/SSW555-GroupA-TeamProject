@@ -32,8 +32,51 @@ class Family:
     #
     ###########################################################################
 
+    def validate_birth_before_marriage(self, individuals):
+        result = True
+
+        # First, get the individuals in the marriage
+        husband = next(filter(lambda indi: indi.uid == self._husband_id, individuals), None)
+        wife = next(filter(lambda indi: indi.uid == self._wife_id, individuals), None)
+
+        # Now we verify they exist!
+        if (husband is not None):
+            # Check the dates
+            if (husband.birthday >= self._married):
+                print(f'ERROR: Husband ID {self._husband_id} was married before their birthday!')
+                result = False
+            # End if
+
+        else:
+            print(f'ERROR: Husband ID {self._husband_id} does not exist in the list of individuals!')
+            # Validation should fail if there is no data on the individual
+            result = False
+        # End if-else
+
+        # Now we verify they exist!
+        if (wife is not None):
+            # Check the dates
+            if (wife.birthday >= self._married):
+                print(f'ERROR: Wife ID {self._wife_id} was married before their birthday!')
+                result = False
+            # End if
+
+        else:
+            print(f'ERROR: Wife ID {self._wife_id} does not exist in the list of individuals!')
+            # Validation should fail if there is no data on the individual
+            result = False
+        # End if-else
+
+        return result
+    # End validate_birth_before_marriage
+
     def validate(self, individuals):
-        pass
+        result = True
+
+        # Validate birth before marriage
+        result &= self.validate_birth_before_marriage(individuals)
+
+        return result
     # End validate
 
     ###########################################################################

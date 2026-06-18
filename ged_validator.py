@@ -125,6 +125,31 @@ class GEDCOM_Validator:
         print(table.get_string())
     # End print_family
 
+    def validate(self):
+        print('\n')
+        print('INFO: Starting Validations!')
+
+        # Validation result
+        result = True
+
+        # First we will want to validate the individuals
+        for individual in self.individuals:
+            result &= individual.validate()
+        # End for
+
+        # Now we will want to validate the families
+        for family in self.families:
+            result &= family.validate(self.individuals)
+        # End for
+
+        if (result is False):
+            print('WARN: Validation failed!')
+        else:
+            print('INFO: Validation is complete!')
+        # End if-else
+    # End validate
+
+
     def run(self, gedcom_file):
         print(gedcom_file)
 
@@ -210,6 +235,9 @@ class GEDCOM_Validator:
         self.print_invidiuals()
         print()
         self.print_family()
+
+        # Now we will run validations!
+        self.validate()
     # End run
 
 # End GEDCOM_Validator

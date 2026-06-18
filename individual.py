@@ -37,9 +37,10 @@ class Individual:
     ###########################################################################
 
     def validate(self):
-        pass
-    # End validate
+        result = True
 
+        return result
+    # End validate
 
 
     ###########################################################################
@@ -200,7 +201,6 @@ class Individual:
 
     def add_spouse(self, value):
         self._spouse.append(value)
-        print(self._spouse)
     # End add_spouse
 
     # Helpers
