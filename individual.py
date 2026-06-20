@@ -39,8 +39,23 @@ class Individual:
     def validate(self):
         result = True
 
+        result &= self.validate_death_after_birth()
+
         return result
     # End validate
+
+    def validate_death_after_birth(self):
+        result = True
+
+        if self._death is not None and self._birthday is not None:
+            if self._death < self._birthday:
+                print(f'ERROR: Individual ID {self._uid} has a death date that precedes their birth date!')
+                result = False
+            # End if
+        # End if
+
+        return result
+    # End validate_death_after_birth
 
 
     ###########################################################################
