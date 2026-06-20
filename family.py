@@ -1,5 +1,5 @@
 # System Imports
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Local imports
 # None
@@ -70,11 +70,49 @@ class Family:
         return result
     # End validate_birth_before_marriage
 
+    def validate_children_birth_dates(self, individuals):
+        result = True
+
+        for child_id in self._children:
+            child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
+
+            if child is None:
+                print(f'ERROR: Child ID {child_id} does not exist in the list of individuals!')
+                result = False
+                continue
+            # End if
+
+            if child.birthday is None:
+                continue
+            # End if
+
+            # Check child born before parents' marriage
+            if self._married is not None and child.birthday < self._married:
+                print(f'ERROR: Child ID {child_id} was born before the marriage of their parents in family {self._uid}!')
+                result = False
+            # End if
+
+            # Check child born more than 9 months after parents' divorce
+            if self._divorced is not None:
+                nine_months_after_divorce = self._divorced + timedelta(days=274)
+                if child.birthday > nine_months_after_divorce:
+                    print(f'ERROR: Child ID {child_id} was born more than 9 months after the divorce of their parents in family {self._uid}!')
+                    result = False
+                # End if
+            # End if
+        # End for
+
+        return result
+    # End validate_children_birth_dates
+
     def validate(self, individuals):
         result = True
 
         # Validate birth before marriage
         result &= self.validate_birth_before_marriage(individuals)
+
+        # Validate children birth dates
+        result &= self.validate_children_birth_dates(individuals)
 
         return result
     # End validate
