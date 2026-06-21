@@ -125,6 +125,23 @@ class GEDCOM_Validator:
         print(table.get_string())
     # End print_family
 
+    def print_family_info(self):
+        # Print the siblings in order!
+        for family in self.families:
+
+            print(f'Family ID {family.uid} Children:')
+
+            ordered_siblings = family.order_siblings_by_age(self.individuals)
+
+            for sibling in ordered_siblings:
+                print(f'Child ID {sibling.uid}: Name {sibling.name} - Age {sibling.age}')
+            # End for
+
+            print()
+        # End for
+
+    # End print_family_info
+
     def validate(self):
         print('\n')
         print('INFO: Starting Validations!')
@@ -166,7 +183,7 @@ class GEDCOM_Validator:
                 strip_line = line.strip()
 
                 # First print
-                # print(f'--> {strip_line}')
+                print(f'--> {strip_line}')
 
                 # Split the line by spaces
                 split_line = strip_line.split(' ', maxsplit=2)
@@ -181,14 +198,14 @@ class GEDCOM_Validator:
                     arguments = split_line[2] if len(split_line) >= 3 else ''
                 # End if-else
 
-                # Post processing!
-                arguments = arguments.strip('@')
-
                 # Check if the tag is valid!
                 valid = self.check_tag_valid(tag, level)
 
                 # Second print - added newline for readability
-                # print(f'<-- {level}|{tag}|{valid}|{arguments}\n')
+                print(f'<-- {level}|{tag}|{valid}|{arguments}\n')
+
+                # Post processing!
+                arguments = arguments.strip('@')
 
                 # Build individual/family collections
                 if level == '0':
@@ -232,9 +249,12 @@ class GEDCOM_Validator:
         # End with
 
         # Now print the tables
+        print()
         self.print_invidiuals()
         print()
         self.print_family()
+        print()
+        self.print_family_info()
 
         # Now we will run validations!
         self.validate()
