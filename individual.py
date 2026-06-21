@@ -36,14 +36,6 @@ class Individual:
     #
     ###########################################################################
 
-    def validate(self):
-        result = True
-
-        result &= self.validate_death_after_birth()
-
-        return result
-    # End validate
-
     def validate_death_after_birth(self):
         result = True
 
@@ -57,6 +49,26 @@ class Individual:
         return result
     # End validate_death_after_birth
 
+    def validate_less_than_150(self):
+        result = True
+
+        # Check if the age of the individual is less than 150!
+        if (self.age >= 150):
+            print(f'ERROR: ID {self.uid} is over 150 years old!')
+            result = False
+        # End if
+
+        return result
+    # End validate_less_than_150
+
+    def validate(self):
+        result = True
+        
+        result &= self.validate_less_than_150()
+        result &= self.validate_death_after_birth()
+
+        return result
+    # End validate
 
     ###########################################################################
     #
@@ -68,8 +80,6 @@ class Individual:
         # Since we are processing GEDCOM tags
         # This method will take in a tag and value abd assign it to the
         # proper python variable
-        print(f'{tag} = {value}')
-
         if (tag == 'INDI'):
             self.uid = value
 
