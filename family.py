@@ -115,6 +115,54 @@ class Family:
         return result
     # End validate_multiple_births
 
+    def validate_multiple_births(self, individuals):
+        # US14: No more than five siblings should be born at the same time
+        result = True
+        birth_date_counts = {}
+
+        for child_id in self._children:
+            child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
+
+            if child is None or child.birthday is None:
+                continue
+            # End if
+
+            birth_date = child.birthday.date()
+
+            if birth_date not in birth_date_counts:
+                birth_date_counts[birth_date] = []
+            # End if
+
+            birth_date_counts[birth_date].append(child_id)
+        # End for
+
+        for birth_date, children in birth_date_counts.items():
+            if len(children) > 5:
+                print(f'ERROR: Family ID {self._uid} has more than five children born on {birth_date}!')
+                result = False
+            # End if
+        # End for
+
+        return result
+    # End validate_multiple_births
+
+    def order_siblings_by_age(self, individuals):
+        # US28: List siblings in families by decreasing age, oldest siblings first
+        siblings = []
+
+        for child_id in self._children:
+            child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
+
+            if child is not None and child.birthday is not None:
+                siblings.append(child)
+            # End if
+        # End for
+
+        siblings.sort(key=lambda child: child.birthday)
+
+        return siblings
+    # End order_siblings_by_age
+
     def validate(self, individuals):
         result = True
 
