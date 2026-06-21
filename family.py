@@ -49,7 +49,6 @@ class Family:
 
         else:
             print(f'ERROR: Husband ID {self._husband_id} does not exist in the list of individuals!')
-            # Validation should fail if there is no data on the individual
             result = False
         # End if-else
 
@@ -63,7 +62,6 @@ class Family:
 
         else:
             print(f'ERROR: Wife ID {self._wife_id} does not exist in the list of individuals!')
-            # Validation should fail if there is no data on the individual
             result = False
         # End if-else
 
@@ -105,6 +103,37 @@ class Family:
         return result
     # End validate_children_birth_dates
 
+    def validate_multiple_births(self, individuals):
+        # US14: No more than five siblings should be born at the same time
+        result = True
+        birth_date_counts = {}
+
+        for child_id in self._children:
+            child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
+
+            if child is None or child.birthday is None:
+                continue
+            # End if
+
+            birth_date = child.birthday.date()
+
+            if birth_date not in birth_date_counts:
+                birth_date_counts[birth_date] = []
+            # End if
+
+            birth_date_counts[birth_date].append(child_id)
+        # End for
+
+        for birth_date, children in birth_date_counts.items():
+            if len(children) > 5:
+                print(f'ERROR: Family ID {self._uid} has more than five children born on {birth_date}!')
+                result = False
+            # End if
+        # End for
+
+        return result
+    # End validate_multiple_births
+
     def validate(self, individuals):
         result = True
 
@@ -113,6 +142,9 @@ class Family:
 
         # Validate children birth dates
         result &= self.validate_children_birth_dates(individuals)
+
+        # Validate multiple births
+        result &= self.validate_multiple_births(individuals)
 
         return result
     # End validate
