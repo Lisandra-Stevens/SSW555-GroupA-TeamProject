@@ -35,35 +35,24 @@ class Family:
     def validate_birth_before_marriage(self, individuals):
         result = True
 
-        # First, get the individuals in the marriage
         husband = next(filter(lambda indi: indi.uid == self._husband_id, individuals), None)
         wife = next(filter(lambda indi: indi.uid == self._wife_id, individuals), None)
 
-        # Now we verify they exist!
-        if (husband is not None):
-            # Check the dates
-            if (husband.birthday >= self._married):
+        if husband is not None:
+            if husband.birthday >= self._married:
                 print(f'ERROR: Husband ID {self._husband_id} was married before their birthday!')
                 result = False
-            # End if
-
         else:
             print(f'ERROR: Husband ID {self._husband_id} does not exist in the list of individuals!')
             result = False
-        # End if-else
 
-        # Now we verify they exist!
-        if (wife is not None):
-            # Check the dates
-            if (wife.birthday >= self._married):
+        if wife is not None:
+            if wife.birthday >= self._married:
                 print(f'ERROR: Wife ID {self._wife_id} was married before their birthday!')
                 result = False
-            # End if
-
         else:
             print(f'ERROR: Wife ID {self._wife_id} does not exist in the list of individuals!')
             result = False
-        # End if-else
 
         return result
     # End validate_birth_before_marriage
@@ -78,27 +67,19 @@ class Family:
                 print(f'ERROR: Child ID {child_id} does not exist in the list of individuals!')
                 result = False
                 continue
-            # End if
 
             if child.birthday is None:
                 continue
-            # End if
 
-            # Check child born before parents' marriage
             if self._married is not None and child.birthday < self._married:
                 print(f'ERROR: Child ID {child_id} was born before the marriage of their parents in family {self._uid}!')
                 result = False
-            # End if
 
-            # Check child born more than 9 months after parents' divorce
             if self._divorced is not None:
                 nine_months_after_divorce = self._divorced + timedelta(days=274)
                 if child.birthday > nine_months_after_divorce:
                     print(f'ERROR: Child ID {child_id} was born more than 9 months after the divorce of their parents in family {self._uid}!')
                     result = False
-                # End if
-            # End if
-        # End for
 
         return result
     # End validate_children_birth_dates
@@ -182,7 +163,6 @@ class Family:
         else:
             print(f'Unknown tag for family {tag}')
         # End if-elif-else
-
     # End set_tag_value
 
     @property
