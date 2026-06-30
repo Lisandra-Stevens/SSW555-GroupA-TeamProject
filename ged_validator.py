@@ -142,6 +142,26 @@ class GEDCOM_Validator:
 
     # End print_family_info
 
+    def list_living_unmarried_over_30(self):
+        # US31: List all living people over 30 who have never been married
+        result = [
+            indi for indi in self.individuals
+            if indi.alive and indi.age > 30 and len(indi.spouse) == 0
+        ]
+
+        print('US31: Living individuals over 30 who have never been married:')
+        if result:
+            table = PrettyTable()
+            table.field_names = ["ID", "Name", "Gender", "Age"]
+            for indi in result:
+                table.add_row([indi.uid, indi.name, indi.gender, indi.age])
+            print(table.get_string())
+        else:
+            print('None found.')
+
+        return result
+    # End list_living_unmarried_over_30
+
     def validate(self):
         print('\n')
         print('INFO: Starting Validations!')
@@ -255,6 +275,10 @@ class GEDCOM_Validator:
         self.print_family()
         print()
         self.print_family_info()
+
+        # US31: List living individuals over 30 who have never been married
+        print()
+        self.list_living_unmarried_over_30()
 
         # Now we will run validations!
         self.validate()
