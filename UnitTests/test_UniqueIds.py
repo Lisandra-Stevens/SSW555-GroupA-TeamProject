@@ -69,6 +69,7 @@ class Test_US22_UniqueIds(unittest.TestCase):
 
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             result = self.validator.validate_unique_ids()
+            
             self.assertEqual(True, result)
         # End with
     # End test_unique_ids_for_fam_and_individ
@@ -88,7 +89,7 @@ class Test_US22_UniqueIds(unittest.TestCase):
             self.assertEqual(fake_out.getvalue(), 'ERROR: US22: Individual UID I01 is a duplicate UID!\n')
             self.assertEqual(False, result)
         # End with
-    # End test_living_over_30_has_spouse_excluded
+    # End test_unique_family_uid_matching_individ_uid
 
     def test_unique_individ_uid_matching_family_uid(self):
         self.validator.individuals = []
@@ -105,7 +106,7 @@ class Test_US22_UniqueIds(unittest.TestCase):
             self.assertEqual(fake_out.getvalue(), 'ERROR: US22: Family UID F02 is a duplicate UID!\n')
             self.assertEqual(False, result)
         # End with
-    # End test_living_under_30_no_spouse_excluded
+    # End test_unique_individ_uid_matching_family_uid
 
     def test_matching_uid_family_and_individual(self):
         self.validator.individuals = []
@@ -122,8 +123,7 @@ class Test_US22_UniqueIds(unittest.TestCase):
             self.assertEqual(fake_out.getvalue(), 'ERROR: US22: Individual UID I02 is a duplicate UID!\nERROR: US22: Family UID F01 is a duplicate UID!\n')
             self.assertEqual(False, result)
         # End with
-    # End test_deceased_over_30_no_spouse_excluded
-
+    # End test_matching_uid_family_and_individual
 # End Test_US22_UniqueIds
 
 
