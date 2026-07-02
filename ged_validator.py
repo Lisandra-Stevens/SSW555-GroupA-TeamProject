@@ -162,6 +162,25 @@ class GEDCOM_Validator:
         return result
     # End list_living_unmarried_over_30
 
+    def list_deceased_individuals(self):
+        # US31: List all living people over 30 who have never been married
+        result = [
+            indi for indi in self.individuals if indi.alive is False
+        ]
+
+        print('US29: List deceased individuals')
+        if result:
+            table = PrettyTable()
+            table.field_names = ["ID", "Name", "Birthday", "Death"]
+            for indi in result:
+                table.add_row([indi.uid, indi.name, indi.birthday.strftime("%Y-%m-%d"), indi.death.strftime("%Y-%m-%d")])
+            print(table.get_string())
+        else:
+            print('None found.')
+
+        return result
+    # End list_living_unmarried_over_30
+
     def validate_unique_ids(self):
         result = True
 
@@ -314,6 +333,10 @@ class GEDCOM_Validator:
         # US31: List living individuals over 30 who have never been married
         print()
         self.list_living_unmarried_over_30()
+
+        # US29: List deceased individuals
+        print()
+        self.list_deceased_individuals()
 
         # Now we will run validations!
         self.validate()
