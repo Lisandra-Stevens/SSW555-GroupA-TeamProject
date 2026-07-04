@@ -180,7 +180,7 @@
 2 DATE 2 FEB 2022
 2 PLAC Providence, Rhode Island, USA
 1 FAMC @F5@
-0 @I18@ INDI
+0 @I17@ INDI
 1 NAME James /Taylor/
 2 GIVN James
 2 SURN Taylor
@@ -209,7 +209,7 @@
 1 MARR
 2 DATE 6 JUN 1978
 2 PLAC Providence, Rhode Island, USA
-0 @F4@ FAM
+0 @F5@ FAM
 1 HUSB @I7@
 1 WIFE @I8@
 1 CHIL @I10@

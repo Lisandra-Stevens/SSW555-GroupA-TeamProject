@@ -162,6 +162,57 @@ class GEDCOM_Validator:
         return result
     # End list_living_unmarried_over_30
 
+    def list_deceased_individuals(self):
+        # US31: List all living people over 30 who have never been married
+        result = [
+            indi for indi in self.individuals if indi.alive is False
+        ]
+
+        print('US29: List deceased individuals')
+        if result:
+            table = PrettyTable()
+            table.field_names = ["ID", "Name", "Birthday", "Death"]
+            for indi in result:
+                table.add_row([indi.uid, indi.name, indi.birthday.strftime("%Y-%m-%d"), indi.death.strftime("%Y-%m-%d")])
+            print(table.get_string())
+        else:
+            print('None found.')
+
+        return result
+    # End list_living_unmarried_over_30
+
+    def validate_unique_ids(self):
+        result = True
+
+        # Keep track of individual uids
+        individ_uid_list = []
+
+        for individual in self.individuals:
+            # Check if the indiviudals unique ID is already in the list
+            if individual.uid in individ_uid_list:
+                print(f'ERROR: US22: Individual UID {individual.uid} is a duplicate UID!')
+                result = False
+            else:
+                individ_uid_list.append(individual.uid)
+            # End if-else
+        # End for
+
+        # Keep track of family uids
+        family_uid_list = []
+
+        for family in self.families:
+            # Check if the indiviudals unique ID is already in the list
+            if family.uid in family_uid_list:
+                print(f'ERROR: US22: Family UID {family.uid} is a duplicate UID!')
+                result = False
+            else:
+                family_uid_list.append(family.uid)
+            # End if-else
+        # End for        
+
+        return result
+    # End validate_unique_ids
+
     def validate(self):
         print('\n')
         print('INFO: Starting Validations!')
@@ -178,6 +229,9 @@ class GEDCOM_Validator:
         for family in self.families:
             result &= family.validate(self.individuals)
         # End for
+
+        # Validate individuals and families
+        result &= self.validate_unique_ids()
 
         if (result is False):
             print('WARN: Validation failed!')
@@ -279,6 +333,10 @@ class GEDCOM_Validator:
         # US31: List living individuals over 30 who have never been married
         print()
         self.list_living_unmarried_over_30()
+
+        # US29: List deceased individuals
+        print()
+        self.list_deceased_individuals()
 
         # Now we will run validations!
         self.validate()
