@@ -129,12 +129,12 @@ class GEDCOM_Validator:
         # Print the siblings in order!
         for family in self.families:
 
-            print(f'Family ID {family.uid} Children:')
+            print(f'INFO: US28: Family ID {family.uid} Children:')
 
             ordered_siblings = family.order_siblings_by_age(self.individuals)
 
             for sibling in ordered_siblings:
-                print(f'Child ID {sibling.uid}: Name {sibling.name} - Age {sibling.age}')
+                print(f'INFO: US28: Child ID {sibling.uid}: Name {sibling.name} - Age {sibling.age}')
             # End for
 
             print()
@@ -227,7 +227,7 @@ class GEDCOM_Validator:
 
         # Now we will want to validate the families
         for family in self.families:
-            result &= family.validate(self.individuals)
+            result &= family.validate(self.individuals, self.families)
         # End for
 
         # Validate individuals and families

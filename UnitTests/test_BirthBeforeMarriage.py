@@ -45,7 +45,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             result = fam.validate_birth_before_marriage(individuals)
 
             # Check the content of the print statement
-            self.assertEqual(fake_out.getvalue(), "ERROR: Husband ID I01 does not exist in the list of individuals!\n")
+            self.assertEqual(fake_out.getvalue(), "ERROR: US02: Husband ID I01 does not exist in the list of individuals!\n")
             self.assertEqual(result, False)
         # End with
     # End test_husband_doesnt_exist
@@ -78,7 +78,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             result = fam.validate_birth_before_marriage(individuals)
 
             # Check the content of the print statement
-            self.assertEqual(fake_out.getvalue(), "ERROR: Wife ID I02 does not exist in the list of individuals!\n")
+            self.assertEqual(fake_out.getvalue(), "ERROR: US02: Wife ID I02 does not exist in the list of individuals!\n")
             self.assertEqual(result, False)
         # End with
     # End test_wife_doesnt_exist
@@ -119,7 +119,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             result = fam.validate_birth_before_marriage(individuals)
 
             # Check the content of the print statement
-            self.assertEqual(fake_out.getvalue(), "ERROR: Wife ID I02 was married before their birthday!\n")
+            self.assertEqual(fake_out.getvalue(), "ERROR: US02: Wife ID I02 was married before their birthday!\n")
             self.assertEqual(result, False)
         # End with
     # End test_both_exist_wife_born_before_marriage
@@ -160,7 +160,7 @@ class Test_US02_BirthBeforeMarriage(unittest.TestCase):
             result = fam.validate_birth_before_marriage(individuals)
 
             # Check the content of the print statement
-            self.assertEqual(fake_out.getvalue(), "ERROR: Husband ID I01 was married before their birthday!\n")
+            self.assertEqual(fake_out.getvalue(), "ERROR: US02: Husband ID I01 was married before their birthday!\n")
             self.assertEqual(result, False)
         # End with
     # End test_both_exist_husband_born_before_marriage

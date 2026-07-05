@@ -25,7 +25,7 @@ class Test_US03_DeathBeforeBirth(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             result = individual.validate_death_after_birth()
 
-            self.assertEqual(fake_out.getvalue(), 'ERROR: Individual ID I01 has a death date that precedes their birth date!\n')
+            self.assertEqual(fake_out.getvalue(), 'ERROR: US03: Individual ID I01 has a death date that precedes their birth date!\n')
             self.assertEqual(result, False)
         # End with
     # End test_death_before_birth

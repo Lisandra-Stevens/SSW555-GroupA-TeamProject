@@ -41,7 +41,7 @@ class Individual:
 
         if self._death is not None and self._birthday is not None:
             if self._death < self._birthday:
-                print(f'ERROR: Individual ID {self._uid} has a death date that precedes their birth date!')
+                print(f'ERROR: US03: Individual ID {self._uid} has a death date that precedes their birth date!')
                 result = False
             # End if
         # End if
@@ -54,7 +54,7 @@ class Individual:
 
         # Check if the age of the individual is less than 150!
         if (self.age >= 150):
-            print(f'ERROR: ID {self.uid} is over 150 years old!')
+            print(f'ERROR: US07: ID {self.uid} is over 150 years old!')
             result = False
         # End if
 
