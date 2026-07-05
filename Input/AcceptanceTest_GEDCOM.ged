@@ -70,7 +70,7 @@
 1 NAME Daniel /Carter/
 2 GIVN Daniel
 2 SURN Carter
-1 SEX M
+1 SEX F
 1 BIRT
 2 DATE 12 MAR 1976
 2 PLAC Hartford, Connecticut, USA
@@ -106,7 +106,6 @@
 1 BIRT
 2 DATE 3 DEC 1977
 2 PLAC Providence, Rhode Island, USA
-1 FAMS @F5@
 1 FAMC @F3@
 0 @I10@ INDI
 1 NAME Emma /Carter/
@@ -117,6 +116,7 @@
 2 DATE 21 JUN 2005
 2 PLAC Boston, Massachusetts, USA
 1 FAMC @F4@
+1 FAMS @F5@
 0 @I11@ INDI
 1 NAME Noah /Carter/
 2 GIVN Noah
@@ -218,7 +218,7 @@
 2 PLAC Boston, Massachusetts, USA
 0 @F5@ FAM
 1 HUSB @I7@
-1 WIFE @I9@
+1 WIFE @I10@
 1 CHIL @I11@
 1 CHIL @I12@
 1 CHIL @I13@
