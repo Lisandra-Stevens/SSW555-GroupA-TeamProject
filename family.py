@@ -28,6 +28,20 @@ class Family:
 
     ###########################################################################
     #
+    # Helpers
+    #
+    ###########################################################################
+
+    def get_year_difference(self, start_date, end_date):
+        # Subtract years, then subtract 1 if the end date hasn't crossed the birthday/anniversary yet
+        has_not_passed = (end_date.month, end_date.day) < (start_date.month, start_date.day)
+        years = end_date.year - start_date.year - has_not_passed
+
+        return years
+    # End get_year_difference
+
+    ###########################################################################
+    #
     # Validators
     #
     ###########################################################################
@@ -40,18 +54,18 @@ class Family:
 
         if husband is not None:
             if husband.birthday >= self._married:
-                print(f'ERROR: Husband ID {self._husband_id} was married before their birthday!')
+                print(f'ERROR: US02: Husband ID {self._husband_id} was married before their birthday!')
                 result = False
         else:
-            print(f'ERROR: Husband ID {self._husband_id} does not exist in the list of individuals!')
+            print(f'ERROR: US02: Husband ID {self._husband_id} does not exist in the list of individuals!')
             result = False
 
         if wife is not None:
             if wife.birthday >= self._married:
-                print(f'ERROR: Wife ID {self._wife_id} was married before their birthday!')
+                print(f'ERROR: US02: Wife ID {self._wife_id} was married before their birthday!')
                 result = False
         else:
-            print(f'ERROR: Wife ID {self._wife_id} does not exist in the list of individuals!')
+            print(f'ERROR: US02: Wife ID {self._wife_id} does not exist in the list of individuals!')
             result = False
 
         return result
@@ -64,7 +78,7 @@ class Family:
             child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
 
             if child is None:
-                print(f'ERROR: Child ID {child_id} does not exist in the list of individuals!')
+                print(f'ERROR: US08: Child ID {child_id} does not exist in the list of individuals!')
                 result = False
                 continue
 
@@ -72,13 +86,13 @@ class Family:
                 continue
 
             if self._married is not None and child.birthday < self._married:
-                print(f'ERROR: Child ID {child_id} was born before the marriage of their parents in family {self._uid}!')
+                print(f'ERROR: US08: Child ID {child_id} was born before the marriage of their parents in family {self._uid}!')
                 result = False
 
             if self._divorced is not None:
                 nine_months_after_divorce = self._divorced + timedelta(days=274)
                 if child.birthday > nine_months_after_divorce:
-                    print(f'ERROR: Child ID {child_id} was born more than 9 months after the divorce of their parents in family {self._uid}!')
+                    print(f'ERROR: US08: Child ID {child_id} was born more than 9 months after the divorce of their parents in family {self._uid}!')
                     result = False
 
         return result
@@ -107,21 +121,13 @@ class Family:
 
         for birth_date, children in birth_date_counts.items():
             if len(children) > 5:
-                print(f'ERROR: Family ID {self._uid} has more than five children born on {birth_date}!')
+                print(f'ERROR: US14: Family ID {self._uid} has more than five children born on {birth_date}!')
                 result = False
             # End if
         # End for
 
         return result
     # End validate_multiple_births
-
-    def get_year_difference(self, start_date, end_date):
-        # Subtract years, then subtract 1 if the end date hasn't crossed the birthday/anniversary yet
-        has_not_passed = (end_date.month, end_date.day) < (start_date.month, start_date.day)
-        years = end_date.year - start_date.year - has_not_passed
-
-        return years
-    # End get_year_difference
 
     def validate_parents_not_too_old(self, individuals):
         # US12: Mother should be less than 60 years older than her children and

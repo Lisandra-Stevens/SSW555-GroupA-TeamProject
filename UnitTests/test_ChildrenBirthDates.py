@@ -57,7 +57,7 @@ class Test_US08_ChildrenBirthDates(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             result = fam.validate_children_birth_dates(individuals)
 
-            self.assertEqual(fake_out.getvalue(), 'ERROR: Child ID I03 was born before the marriage of their parents in family F1!\n')
+            self.assertEqual(fake_out.getvalue(), 'ERROR: US08: Child ID I03 was born before the marriage of their parents in family F1!\n')
             self.assertEqual(result, False)
         # End with
     # End test_child_born_before_marriage
@@ -112,7 +112,7 @@ class Test_US08_ChildrenBirthDates(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             result = fam.validate_children_birth_dates(individuals)
 
-            self.assertEqual(fake_out.getvalue(), 'ERROR: Child ID I03 was born more than 9 months after the divorce of their parents in family F1!\n')
+            self.assertEqual(fake_out.getvalue(), 'ERROR: US08: Child ID I03 was born more than 9 months after the divorce of their parents in family F1!\n')
             self.assertEqual(result, False)
         # End with
     # End test_child_born_more_than_9_months_after_divorce
@@ -160,7 +160,7 @@ class Test_US08_ChildrenBirthDates(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             result = fam.validate_children_birth_dates(individuals)
 
-            self.assertEqual(fake_out.getvalue(), 'ERROR: Child ID I03 does not exist in the list of individuals!\n')
+            self.assertEqual(fake_out.getvalue(), 'ERROR: US08: Child ID I03 does not exist in the list of individuals!\n')
             self.assertEqual(result, False)
         # End with
     # End test_child_does_not_exist
