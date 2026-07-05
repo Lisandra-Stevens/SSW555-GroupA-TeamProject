@@ -115,37 +115,6 @@ class Family:
         return result
     # End validate_multiple_births
 
-    def validate_multiple_births(self, individuals):
-        # US14: No more than five siblings should be born at the same time
-        result = True
-        birth_date_counts = {}
-
-        for child_id in self._children:
-            child = next(filter(lambda indi: indi.uid == child_id, individuals), None)
-
-            if child is None or child.birthday is None:
-                continue
-            # End if
-
-            birth_date = child.birthday.date()
-
-            if birth_date not in birth_date_counts:
-                birth_date_counts[birth_date] = []
-            # End if
-
-            birth_date_counts[birth_date].append(child_id)
-        # End for
-
-        for birth_date, children in birth_date_counts.items():
-            if len(children) > 5:
-                print(f'ERROR: Family ID {self._uid} has more than five children born on {birth_date}!')
-                result = False
-            # End if
-        # End for
-
-        return result
-    # End validate_multiple_births
-
     def get_year_difference(self, start_date, end_date):
         # Subtract years, then subtract 1 if the end date hasn't crossed the birthday/anniversary yet
         has_not_passed = (end_date.month, end_date.day) < (start_date.month, start_date.day)
@@ -226,7 +195,123 @@ class Family:
         return siblings
     # End order_siblings_by_age
 
-    def validate(self, individuals):
+    def get_descendants(self, person_id, families):
+        # Helper for US17: find all descendants of a person
+        descendants = set()
+
+        if person_id is None:
+            return descendants
+        # End if
+
+        for family in families:
+            if family.husband_id == person_id or family.wife_id == person_id:
+                for child_id in family.children:
+                    descendants.add(child_id)
+                    descendants.update(self.get_descendants(child_id, families))
+                # End for
+            # End if
+        # End for
+
+        return descendants
+    # End get_descendants
+
+    def validate_no_marriages_to_descendants(self, families):
+        # US17: Parents should not marry any of their descendants
+        result = True
+
+        husband_descendants = self.get_descendants(self._husband_id, families)
+        wife_descendants = self.get_descendants(self._wife_id, families)
+
+        if self._wife_id in husband_descendants:
+            print(f'ERROR: US17: Husband ID {self._husband_id} is married to descendant Wife ID {self._wife_id} in family {self._uid}!')
+            result = False
+        # End if
+
+        if self._husband_id in wife_descendants:
+            print(f'ERROR: US17: Wife ID {self._wife_id} is married to descendant Husband ID {self._husband_id} in family {self._uid}!')
+            result = False
+        # End if
+
+        return result
+    # End validate_no_marriages_to_descendants
+
+    def get_parents(self, person_id, families):
+        # Helper for US20: find parents of a person
+        parents = set()
+
+        if person_id is None:
+            return parents
+        # End if
+
+        for family in families:
+            if person_id in family.children:
+                if family.husband_id is not None:
+                    parents.add(family.husband_id)
+                # End if
+
+                if family.wife_id is not None:
+                    parents.add(family.wife_id)
+                # End if
+            # End if
+        # End for
+
+        return parents
+    # End get_parents
+
+    def get_siblings(self, person_id, families):
+        # Helper for US20: find siblings of a person
+        siblings = set()
+
+        if person_id is None:
+            return siblings
+        # End if
+
+        for family in families:
+            if person_id in family.children:
+                for child_id in family.children:
+                    if child_id != person_id:
+                        siblings.add(child_id)
+                    # End if
+                # End for
+            # End if
+        # End for
+
+        return siblings
+    # End get_siblings
+
+    def get_aunts_uncles(self, person_id, families):
+        # Helper for US20: aunts/uncles are siblings of a person's parents
+        aunts_uncles = set()
+        parents = self.get_parents(person_id, families)
+
+        for parent_id in parents:
+            aunts_uncles.update(self.get_siblings(parent_id, families))
+        # End for
+
+        return aunts_uncles
+    # End get_aunts_uncles
+
+    def validate_aunts_uncles(self, families):
+        # US20: Aunts and uncles should not marry their nieces or nephews
+        result = True
+
+        husband_aunts_uncles = self.get_aunts_uncles(self._husband_id, families)
+        wife_aunts_uncles = self.get_aunts_uncles(self._wife_id, families)
+
+        if self._wife_id in husband_aunts_uncles:
+            print(f'ERROR: US20: Husband ID {self._husband_id} is married to aunt/uncle Wife ID {self._wife_id} in family {self._uid}!')
+            result = False
+        # End if
+
+        if self._husband_id in wife_aunts_uncles:
+            print(f'ERROR: US20: Wife ID {self._wife_id} is married to aunt/uncle Husband ID {self._husband_id} in family {self._uid}!')
+            result = False
+        # End if
+
+        return result
+    # End validate_aunts_uncles
+
+    def validate(self, individuals, families=None):
         result = True
 
         # Validate birth before marriage
@@ -243,6 +328,16 @@ class Family:
 
         # Validate correct gender for role
         result &= self.validate_correct_gender_for_role(individuals)
+
+        # Validate no marriages to descendants
+        if families is not None:
+            result &= self.validate_no_marriages_to_descendants(families)
+        # End if
+
+        # Validate aunts/uncles should not marry nieces/nephews
+        if families is not None:
+            result &= self.validate_aunts_uncles(families)
+        # End if
 
         return result
     # End validate
