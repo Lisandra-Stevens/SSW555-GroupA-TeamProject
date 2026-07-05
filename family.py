@@ -329,16 +329,11 @@ class Family:
         # Validate correct gender for role
         result &= self.validate_correct_gender_for_role(individuals)
 
-        # Validate no marriages to descendants
+             # Validate family relationship rules
         if families is not None:
             result &= self.validate_no_marriages_to_descendants(families)
-        # End if
-
-        # Validate aunts/uncles should not marry nieces/nephews
-        if families is not None:
             result &= self.validate_aunts_uncles(families)
         # End if
-
         return result
     # End validate
 
