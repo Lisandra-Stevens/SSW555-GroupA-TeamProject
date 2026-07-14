@@ -181,6 +181,45 @@ class GEDCOM_Validator:
         return result
     # End list_living_unmarried_over_30
 
+    def list_orphans(self):
+        # US33: List all orphans
+        orphan_list = []
+
+        for family in self.families:
+            # For each family, find the husband and the wife by ID
+            husband = next(filter(lambda indi: indi.uid == family.husband_id, self.individuals), None)
+            wife = next(filter(lambda indi: indi.uid == family.wife_id, self.individuals), None)
+
+            # Check that they exist
+            if (husband is not None) and (wife is not None):
+                if (husband.alive is False) and (wife.alive is False):
+                    # The childen are orphans, we can find them by ID
+                    for child_id in family.children:
+                        child = next(filter(lambda indi: indi.uid == child_id, self.individuals), None)
+
+                        orphan_list.append(child)
+                    # End for
+                # End if
+            # End if
+        # End for
+
+        # Print the orphans
+        print('US33: List orphans')
+
+        if orphan_list != []:
+            table = PrettyTable()
+            table.field_names = ["ID", "Name", "Family ID"]
+            for indi in orphan_list:
+                table.add_row([indi.uid, indi.name, indi.child])
+            # End for
+            print(table.get_string())
+        else:
+            print('None found.')
+        # End if
+
+        return orphan_list
+    # End list_orphans
+
     def validate_unique_ids(self):
         result = True
 
@@ -337,6 +376,10 @@ class GEDCOM_Validator:
         # US29: List deceased individuals
         print()
         self.list_deceased_individuals()
+
+        # US33: List orphans
+        print()
+        self.list_orphans()
 
         # Now we will run validations!
         self.validate()
