@@ -317,6 +317,24 @@ class Family:
         return result
     # End validate_aunts_uncles
 
+    def validate_no_sibling_marriage(self, individuals):
+        result = True
+
+        husband = next(filter(lambda indi: indi.uid == self._husband_id, individuals), None)
+        wife = next(filter(lambda indi: indi.uid == self._wife_id, individuals), None)
+
+        # Now we will loop through the husband's child families and check if the wife is a child in the same family
+        for fam_id in husband.child:
+            if (fam_id in wife.child):
+                print(f'ERROR: US18: Family ID {self._uid} has married siblings from family {fam_id}!')
+                result = False
+                break
+            # End if
+        # End for
+
+        return result
+    # End validate_no_sibling_marriage
+
     def validate(self, individuals, families=None):
         result = True
 
@@ -334,6 +352,9 @@ class Family:
 
         # Validate correct gender for role
         result &= self.validate_correct_gender_for_role(individuals)
+
+        # Validate no sibling marriages
+        result &= self.validate_no_sibling_marriage(individuals)
 
         # Validate no marriages to descendants
         if families is not None:
